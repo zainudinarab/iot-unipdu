@@ -17,5 +17,8 @@ Route::resource('status-perangkat', StatusPerangkatController::class);
 
 Route::get('/mqtt/publish/{topic}/{message}', [MqttController::class, 'publishMessage']);
 Route::get('/mqtt/subscribe/{topic}', [MqttController::class, 'subscribeToTopic']);
-Route::get('/mqtt/publish', [MqttController::class, 'publish']);
-Route::get('/mqtt/subscribe', [MqttController::class, 'subscribe']);
+// Route::get('/mqtt/publish', [MqttController::class, 'publish']);
+// Route::get('/mqtt/subscribe', [MqttController::class, 'subscribe']);
+Route::get('mqtt/test-connection', [MqttController::class, 'testConnection']);
+Route::get('mqtt/subscribe', [MqttController::class, 'subscribeToTopic']);
+Route::get('mqtt/message', [MqttController::class, 'getMqttMessage']);

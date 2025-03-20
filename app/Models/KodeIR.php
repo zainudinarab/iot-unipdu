@@ -2,12 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class StatusPerangkat extends Model
+class KodeIR extends Model
 {
-    protected $table = 'status_perangkat';
-    protected $fillable = ['perangkat_id', 'status'];
+    use HasFactory;
+
+    protected $fillable = ['perangkat_id', 'kode'];
 
     public function perangkat()
     {
