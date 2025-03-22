@@ -14,12 +14,10 @@ class DatabaseSeeder extends Seeder
 
         $this->call([
             UserSeeder::class,
-            GedungSeeder::class,
-            LantaiSeeder::class,
-            KelasSeeder::class,
+            GedungLantaiSeeder::class,
+            RuanganSeeder::class,
             PerangkatSeeder::class,
-            RfidCardSeeder::class
-
+            // RfidCardSeeder::class
         ]);
     }
 }

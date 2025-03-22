@@ -3,9 +3,11 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
+
 use App\Http\Controllers\API\{
     GedungController,
     LantaiController,
+    RuanganController,
     KelasController,
     PerangkatController,
     RFIDCardController,
@@ -25,6 +27,7 @@ Route::apiResource('lantais', LantaiController::class);
 Route::apiResource('kelas', KelasController::class);
 Route::apiResource('perangkats', PerangkatController::class);
 Route::apiResource('rfid-cards', RFIDCardController::class);
+Route::apiResource('ruangans', RuanganController::class);
 
 
 Route::get('/user', function (Request $request) {

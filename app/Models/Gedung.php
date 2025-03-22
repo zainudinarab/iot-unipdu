@@ -9,10 +9,16 @@ class Gedung extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['nama', 'keterangan','jumlah_lantai'];
+    protected $fillable = ['nama', 'keterangan', 'jumlah_lantai'];
 
     public function lantais()
     {
         return $this->hasMany(Lantai::class);
+    }
+
+
+    public function ruangans()
+    {
+        return $this->hasManyThrough(Ruangan::class, Lantai::class);
     }
 }

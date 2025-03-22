@@ -4,37 +4,40 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\Perangkat;
-use App\Models\Kelas;
+use App\Models\Ruangan;
+use Faker\Factory as Faker;
 
 class PerangkatSeeder extends Seeder
 {
     public function run(): void
     {
-        // Ambil semua data Kelas
-        $kelas = Kelas::all();
+        $ruangans = Ruangan::all();
+        $faker = Faker::create();
 
-        foreach ($kelas as $k) {
-            // Mengambil nomor urut terakhir untuk kelas dan kategori yang sama
-            $lastNumber = Perangkat::where('kelas_id', $k->id)
-                ->where('kategori', 'ac') // Atau kategori lain yang sesuai
-                ->max('nomor_urut');
+        foreach ($ruangans as $ruangan) {
 
-            // Menetapkan nomor urut berikutnya
-            $nomorUrut = $lastNumber ? $lastNumber + 1 : 1;
+            for ($i = 1; $i <= 3; $i++) {
+                $kategori = $faker->randomElement(['AC', 'Lampu', 'sensor_arus']);
+                $tipe = $faker->randomElement(['relay', 'sensor']);
+                // Mengambil nomor urut perangkat terakhir berdasarkan kategori di dalam ruangan
+                $lastNumber = Perangkat::where('ruangan_id', $ruangan->id)
+                    ->where('kategori', $kategori) // Mengambil berdasarkan kategori perangkat
+                    ->max('nomor_urut');
 
-            // Membuat perangkat untuk setiap kelas
-            $perangkat = Perangkat::create([
-                'kelas_id' => $k->id,
-                'tipe' => 'relay', // Misalnya tipe 'relay', sesuaikan dengan data yang sesuai
-                'nama' => 'Perangkat ' . $k->id, // Sesuaikan nama perangkat sesuai kelas
-                'kategori' => 'ac', // Misalnya kategori 'ac', sesuaikan dengan data yang sesuai
-                'nomor_urut' => $nomorUrut,
-                'topic_mqtt' => '', // Kosongkan dahulu, nanti akan diupdate
-            ]);
-
-            // Mengupdate kolom topic_mqtt menggunakan accessor
-            $perangkat->topic_mqtt = $perangkat->mqttTopic; // Memanggil accessor untuk mendapatkan mqtt_topic
-            $perangkat->save(); // Menyimpan nilai mqtt_topic ke dalam database
+                // Jika perangkat sudah ada, increment nomor urutnya, jika tidak, mulai dari 1
+                $nomorUrut = $lastNumber ? $lastNumber + 1 : 1;
+                $perangkat = Perangkat::create([
+                    'ruangan_id' => $ruangan->id, // Menghubungkan perangkat ke ruangan
+                    'tipe' => $tipe,
+                    'nama' => $tipe . '' . $kategori . ' ' . $nomorUrut,
+                    'kategori' =>  $kategori, // Kategori perangkat
+                    'nomor_urut' => $nomorUrut, // Nomor urut perangkat dalam ruangan
+                    'topic_mqtt' => '',
+                    'status' => $faker->boolean(), // Status perangkat acak (aktif/tidak aktif)
+                ]);
+                // $perangkat->topic_mqtt = $perangkat->mqttTopic;
+                $perangkat->save();
+            }
         }
     }
 }

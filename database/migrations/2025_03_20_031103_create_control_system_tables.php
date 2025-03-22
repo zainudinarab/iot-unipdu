@@ -23,20 +23,19 @@ return new class extends Migration {
             $table->integer('nomor'); // 1, 2, 3
             $table->timestamps();
         });
-
         // Tabel Kelas
-        Schema::create('kelas', function (Blueprint $table) {
+        Schema::create('ruangans', function (Blueprint $table) {
             $table->id();
             $table->foreignId('lantai_id')->constrained()->onDelete('cascade');
-            $table->string('name')->unique(); // Menggunakan 'name' sebagai nama kelas yang unik.
+            $table->foreignId('gedung_id')->constrained()->onDelete('cascade');
+            $table->string('name');
             $table->timestamps();
+            $table->unique(['gedung_id', 'lantai_id', 'name']);
         });
-        
-
         // Tabel Perangkat (Relay, Sensor Arus, IR)
-        Schema::create('perangkat', function (Blueprint $table) {
+        Schema::create('perangkats', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('kelas_id')->constrained()->onDelete('cascade');
+            $table->foreignId('ruangan_id')->constrained()->onDelete('cascade');
             $table->string('tipe'); // relay, sensor
             $table->string('nama')->nullable(); // Misalnya "Relay AC 1"
             $table->string('kategori')->nullable(); // Misalnya "AC", "Lampu","sensor_arus"
@@ -87,8 +86,8 @@ return new class extends Migration {
         Schema::dropIfExists('akses_kartu');
         Schema::dropIfExists('rfid_cards');
         Schema::dropIfExists('kode_ir');
-        Schema::dropIfExists('perangkat');
-        Schema::dropIfExists('kelas');
+        Schema::dropIfExists('perangkats');
+        Schema::dropIfExists('ruangans');
         Schema::dropIfExists('lantais');
         Schema::dropIfExists('gedungs');
     }

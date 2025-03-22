@@ -6,18 +6,16 @@ use Illuminate\Database\Eloquent\Model;
 
 class Perangkat extends Model
 {
-    protected $table = 'perangkat';
+
     // Kolom yang dapat diisi
-    protected $fillable = ['kelas_id', 'tipe', 'nama', 'kategori', 'nomor_urut', 'topic_mqtt','status'];
-
-
+    protected $fillable = ['ruangan_id', 'tipe', 'nama', 'kategori', 'nomor_urut', 'topic_mqtt', 'status'];
     public function status()
     {
         return $this->hasOne(StatusPerangkat::class);
     }
-    public function kelas()
+    public function ruangan()
     {
-        return $this->belongsTo(Kelas::class);
+        return $this->belongsTo(Ruangan::class);
     }
 
     public function kodeIR()
@@ -26,13 +24,13 @@ class Perangkat extends Model
     }
     public function getMqttTopicAttribute()
     {
-        $gedung = $this->kelas->lantai->gedung->nama;
-        $lantai = $this->kelas->lantai->id;
-        $kelas = $this->kelas->nomor;
+        $gedung = $this->ruangan->lantai->gedung->nama;
+        $lantai = $this->ruangan->lantai->nomor;
+        $ruangan = $this->ruangan->name;
         $tipe = strtolower($this->tipe); // relay, sensor, ir
         $kategori = strtolower($this->kategori); // ac, lampu, arus
         $nomor = $this->nomor_urut; // Nomor urut dalam kelas
-        return "gedung-{$gedung}/lantai-{$lantai}/kelas-{$kelas}/{$tipe}/{$kategori}{$nomor}";
+        return "gedung-{$gedung}/lantai-{$lantai}/ruangan-{$ruangan}/{$tipe}/{$kategori}{$nomor}";
     }
     protected static function boot()
     {

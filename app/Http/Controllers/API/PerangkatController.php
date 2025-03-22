@@ -20,7 +20,7 @@ class PerangkatController extends Controller
     {
         try {
             $validated = $request->validate([
-                'kelas_id' => 'required|exists:kelas,id',
+                'ruangan_id' => 'required|exists:ruangans,id',
                 'nama' => 'required|string',
                 'kategori' => 'required|string',
                 'tipe' => 'required|string',
@@ -30,7 +30,7 @@ class PerangkatController extends Controller
                 ->max('nomor_urut');
             $nomorUrut = $lastNumber ? $lastNumber + 1 : 1;
             $perangkat = Perangkat::create([
-                'kelas_id' => $validated['kelas_id'],
+                'ruangan_id' => $validated['ruangan_id'],
                 'tipe' => $validated['tipe'],
                 'nama' => $validated['nama'],
                 'kategori' => $validated['kategori'],
@@ -69,7 +69,7 @@ class PerangkatController extends Controller
     public function update(Request $request, $id)
     {
         $perangkat = Perangkat::findOrFail($id);
-        $perangkat->update($request->only(['kelas_id', 'tipe', 'nama', 'topic_mqtt']));
+        $perangkat->update($request->only(['ruangan_id', 'tipe', 'nama', 'topic_mqtt']));
         return response()->json($perangkat);
     }
 
@@ -87,8 +87,8 @@ class PerangkatController extends Controller
         $perangkat->status = $request->status;
         $perangkat->save();
         //public
-        
-        $topic=$perangkat->topic_mqtt;
+
+        $topic = $perangkat->topic_mqtt;
         $mqtt = MQTT::connection();
         $mqtt->publish($topic, $request->status);
         $mqtt->disconnect();

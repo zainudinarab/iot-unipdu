@@ -15,9 +15,8 @@ class Lantai extends Model
     {
         return $this->belongsTo(Gedung::class);
     }
-
-    public function kelas()
+    public function ruangans()
     {
-        return $this->hasMany(Kelas::class);
+        return $this->hasMany(Ruangan::class);
     }
 }

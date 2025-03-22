@@ -9,41 +9,48 @@ use Illuminate\Http\Request;
 class KelasController extends Controller
 {
     public function index()
-{
-    // Ambil data kelas beserta perangkat terkait
-    $kelasList = Kelas::with('perangkat')->get();
-
-    // Perbaiki pengelompokan perangkat relay dan sensor
-    $kelasList->transform(function ($kelas) {
-        // Kelompokkan perangkat relay
-        $kelas->perangkat_relay = $kelas->perangkat->filter(function ($perangkat) {
-            return trim($perangkat->tipe) === 'relay'; // Trim untuk menghindari spasi ekstra
+    {
+        // Ambil data kelas beserta perangkat terkait
+        $kelasList = Kelas::with('perangkat')->get();
+        // Perbaiki pengelompokan perangkat relay dan sensor
+        $kelasList->transform(function ($kelas) {
+            // Kelompokkan perangkat relay
+            $kelas->perangkat_relay = $kelas->perangkat->filter(function ($perangkat) {
+                return trim($perangkat->tipe) === 'relay'; // Trim untuk menghindari spasi ekstra
+            });
+            // Kelompokkan perangkat sensor
+            $kelas->perangkat_sensor = $kelas->perangkat->filter(function ($perangkat) {
+                return trim($perangkat->tipe) === 'sensor'; // Trim untuk menghindari spasi ekstra
+            });
+            // Hapus perangkat yang tidak dikelompokkan (opsional)
+            unset($kelas->perangkat); // Menghapus perangkat yang mencakup semua
+            return $kelas;
         });
 
-        // Kelompokkan perangkat sensor
-        $kelas->perangkat_sensor = $kelas->perangkat->filter(function ($perangkat) {
-            return trim($perangkat->tipe) === 'sensor'; // Trim untuk menghindari spasi ekstra
-        });
-
-        // Hapus perangkat yang tidak dikelompokkan (opsional)
-        unset($kelas->perangkat); // Menghapus perangkat yang mencakup semua
-
-        return $kelas;
-    });
-
-    return response()->json($kelasList);
-}
+        return response()->json($kelasList);
+    }
 
 
     public function store(Request $request)
     {
-        $request->validate([
-            'lantai_id' => 'required|exists:lantais,id',
-            'nomor' => 'required|string',
-        ]);
-
-        $kelas = Kelas::create($request->only(['lantai_id', 'nomor']));
-        return response()->json($kelas, 201);
+        try {
+            $request->validate([
+                'lantai_id' => 'required|exists:lantais,id',
+                'name' => 'required|string',
+            ]);
+            $kelas = Kelas::create($request->only(['lantai_id', 'name']));
+            return response()->json($kelas, 201);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'message' => 'Validasi gagal',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Terjadi kesalahan pada server',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function show($id)
