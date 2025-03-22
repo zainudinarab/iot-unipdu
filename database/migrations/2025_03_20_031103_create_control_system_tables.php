@@ -11,6 +11,8 @@ return new class extends Migration {
         Schema::create('gedungs', function (Blueprint $table) {
             $table->id();
             $table->string('nama')->unique(); // Contoh: Gedung A, Gedung B
+            $table->string('keterangan')->nullable();
+            $table->integer('jumlah_lantai');  // Menambahkan jumlah lantai
             $table->timestamps();
         });
 
@@ -26,19 +28,21 @@ return new class extends Migration {
         Schema::create('kelas', function (Blueprint $table) {
             $table->id();
             $table->foreignId('lantai_id')->constrained()->onDelete('cascade');
-            $table->integer('nomor'); // 202, 203, dll.
+            $table->string('name')->unique(); // Menggunakan 'name' sebagai nama kelas yang unik.
             $table->timestamps();
         });
+        
 
         // Tabel Perangkat (Relay, Sensor Arus, IR)
         Schema::create('perangkat', function (Blueprint $table) {
             $table->id();
             $table->foreignId('kelas_id')->constrained()->onDelete('cascade');
-            $table->string('tipe'); // relay, sensor_arus, ir
+            $table->string('tipe'); // relay, sensor
             $table->string('nama')->nullable(); // Misalnya "Relay AC 1"
             $table->string('kategori')->nullable(); // Misalnya "AC", "Lampu","sensor_arus"
             $table->integer('nomor_urut')->nullable(); // Nomor urut perangkat dalam kelas
             $table->string('topic_mqtt')->unique()->nullable(); // Topik MQTT unik
+            $table->boolean('status')->default(false); // Status aktif/tidak aktif
             $table->timestamps();
         });
 

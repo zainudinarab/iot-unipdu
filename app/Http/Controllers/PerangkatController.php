@@ -7,7 +7,7 @@ use App\Models\StatusPerangkat;
 use App\Services\MqttService;
 use Illuminate\Http\Request;
 use PhpMqtt\Client\Facades\MQTT;
-use PhpMqtt\Client\Facades\MQTT;
+
 
 class PerangkatController extends Controller
 {

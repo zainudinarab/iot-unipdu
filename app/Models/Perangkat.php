@@ -8,7 +8,7 @@ class Perangkat extends Model
 {
     protected $table = 'perangkat';
     // Kolom yang dapat diisi
-    protected $fillable = ['kelas_id', 'tipe', 'nama', 'kategori', 'nomor_urut', 'topic_mqtt'];
+    protected $fillable = ['kelas_id', 'tipe', 'nama', 'kategori', 'nomor_urut', 'topic_mqtt','status'];
 
 
     public function status()

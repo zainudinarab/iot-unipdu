@@ -19,7 +19,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/dashboard', [GedungController::class, 'dashboard']);
 });
 
-
+Route::patch('perangkat/{id}/status', [PerangkatController::class, 'updateStatus']);
 Route::apiResource('gedungs', GedungController::class);
 Route::apiResource('lantais', LantaiController::class);
 Route::apiResource('kelas', KelasController::class);

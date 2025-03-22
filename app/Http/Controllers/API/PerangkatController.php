@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use PhpMqtt\Client\Facades\MQTT;
 use App\Models\Perangkat;
 use Illuminate\Http\Request;
 
@@ -10,7 +11,9 @@ class PerangkatController extends Controller
 {
     public function index()
     {
-        return response()->json(Perangkat::with('kelas.lantai.gedung')->get());
+        $perangkat = Perangkat::all(); // Mengambil semua data perangkat
+        return response()->json($perangkat);
+        // return response()->json(Perangkat::with('kelas.lantai.gedung')->get());
     }
 
     public function store(Request $request)
@@ -33,6 +36,7 @@ class PerangkatController extends Controller
                 'kategori' => $validated['kategori'],
                 'nomor_urut' => $nomorUrut,
                 'topic_mqtt' => '', // Mengosongkan nilai ini karena kita akan mengisi setelah
+                'status' => false,
             ]);
             // Mengupdate kolom mqtt_topic menggunakan accessor
             $perangkat->topic_mqtt = $perangkat->mqttTopic; // Memanggil accessor untuk mendapatkan mqtt_topic yang dihasilkan
@@ -73,5 +77,36 @@ class PerangkatController extends Controller
     {
         Perangkat::destroy($id);
         return response()->json(['message' => 'Deleted successfully']);
+    }
+    public function updateStatus(Request $request, $id)
+    {
+        $request->validate([
+            'status' => 'required|in:0,1', // Hanya menerima 0 atau 1
+        ]);
+        $perangkat = Perangkat::findOrFail($id);
+        $perangkat->status = $request->status;
+        $perangkat->save();
+        //public
+        
+        $topic=$perangkat->topic_mqtt;
+        $mqtt = MQTT::connection();
+        $mqtt->publish($topic, $request->status);
+        $mqtt->disconnect();
+        // return response()->json([
+        //     'message' => 'Status perangkat berhasil diperbarui.',
+        //     'perangkat' => $perangkat,
+        // ]);
+    }
+
+    public function publishMessage($topic, $message)
+    {
+        $mqtt = MQTT::connection();
+        $mqtt->publish($topic, $message);
+        $mqtt->disconnect();
+        // return response()->json([
+        //     'status' => 'success',
+        //     'message' => 'Message published to topic: ' . $topic,
+        //     'message2' => $message
+        // ]);
     }
 }

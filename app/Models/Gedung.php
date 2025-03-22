@@ -9,7 +9,7 @@ class Gedung extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['nama'];
+    protected $fillable = ['nama', 'keterangan','jumlah_lantai'];
 
     public function lantais()
     {

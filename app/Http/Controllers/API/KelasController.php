@@ -9,9 +9,31 @@ use Illuminate\Http\Request;
 class KelasController extends Controller
 {
     public function index()
-    {
-        return response()->json(Kelas::with('lantai.gedung')->get());
-    }
+{
+    // Ambil data kelas beserta perangkat terkait
+    $kelasList = Kelas::with('perangkat')->get();
+
+    // Perbaiki pengelompokan perangkat relay dan sensor
+    $kelasList->transform(function ($kelas) {
+        // Kelompokkan perangkat relay
+        $kelas->perangkat_relay = $kelas->perangkat->filter(function ($perangkat) {
+            return trim($perangkat->tipe) === 'relay'; // Trim untuk menghindari spasi ekstra
+        });
+
+        // Kelompokkan perangkat sensor
+        $kelas->perangkat_sensor = $kelas->perangkat->filter(function ($perangkat) {
+            return trim($perangkat->tipe) === 'sensor'; // Trim untuk menghindari spasi ekstra
+        });
+
+        // Hapus perangkat yang tidak dikelompokkan (opsional)
+        unset($kelas->perangkat); // Menghapus perangkat yang mencakup semua
+
+        return $kelas;
+    });
+
+    return response()->json($kelasList);
+}
+
 
     public function store(Request $request)
     {
