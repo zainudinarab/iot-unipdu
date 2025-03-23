@@ -15,6 +15,15 @@ class GedungController extends Controller
         $gedungs = Gedung::all();
         return response()->json($gedungs);
     }
+    // getLantai
+    public function getLantai(Request $request)
+    {
+        $query = Lantai::query();
+        if ($request->has('gedung_id')) {
+            $query->where('gedung_id', $request->gedung_id);
+        }
+        return response()->json($query->get());
+    }
 
     // Menyimpan data gedung baru
     public function store(Request $request)

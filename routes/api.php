@@ -6,9 +6,7 @@ use App\Http\Controllers\API\AuthController;
 
 use App\Http\Controllers\API\{
     GedungController,
-    LantaiController,
     RuanganController,
-    KelasController,
     PerangkatController,
     RFIDCardController,
 };
@@ -23,11 +21,17 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
 Route::patch('perangkat/{id}/status', [PerangkatController::class, 'updateStatus']);
 Route::apiResource('gedungs', GedungController::class);
-Route::apiResource('lantais', LantaiController::class);
-Route::apiResource('kelas', KelasController::class);
+
 Route::apiResource('perangkats', PerangkatController::class);
 Route::apiResource('rfid-cards', RFIDCardController::class);
 Route::apiResource('ruangans', RuanganController::class);
+// perangkat group by Ruangan
+Route::get('/perangkat-by-ruangan', [PerangkatController::class, 'perangkatByRuangan']);
+// getlantaai
+Route::get('/lantais', [GedungController::class, 'getLantai']);
+// perangkatGrupRuangan
+Route::get('/perangkat-grup-ruangan', [PerangkatController::class, 'perangkatGrupRuangan']);
+
 
 
 Route::get('/user', function (Request $request) {

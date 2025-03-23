@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use PhpMqtt\Client\Facades\MQTT;
 use App\Models\Perangkat;
+use App\Models\Ruangan;
 use Illuminate\Http\Request;
 
 class PerangkatController extends Controller
@@ -14,6 +15,19 @@ class PerangkatController extends Controller
         $perangkat = Perangkat::all(); // Mengambil semua data perangkat
         return response()->json($perangkat);
         // return response()->json(Perangkat::with('kelas.lantai.gedung')->get());
+        // yang baru
+
+    }
+
+    // perangan by ruangan
+    public function perangkatGrupRuangan(Request $request)
+    {
+        $request->validate([
+            'ruangan_id' => 'required|exists:ruangans,id',
+        ]);
+
+        $perangkats = Perangkat::where('ruangan_id', $request->ruangan_id)->get();
+        return response()->json($perangkats);
     }
 
     public function store(Request $request)
@@ -108,5 +122,25 @@ class PerangkatController extends Controller
         //     'message' => 'Message published to topic: ' . $topic,
         //     'message2' => $message
         // ]);
+    }
+    public function perangkatByRuangan()
+    {
+        $ruangans = Ruangan::with(['lantai', 'gedung'])->get();
+        // dd($ruangans->perangkat);
+        // Perbaiki pengelompokan perangkat relay dan sensor
+        $ruangans->transform(function ($ruangans) {
+            // Kelompokkan perangkat relay
+            $ruangans->perangkat_relay = $ruangans->perangkats->filter(function ($perangkat) {
+                return trim($perangkat->tipe) === 'relay'; // Trim untuk menghindari spasi ekstra
+            });
+            // Kelompokkan perangkat sensor
+            $ruangans->perangkat_sensor = $ruangans->perangkats->filter(function ($perangkat) {
+                return trim($perangkat->tipe) === 'sensor'; // Trim untuk menghindari spasi ekstra
+            });
+            // Hapus perangkat yang tidak dikelompokkan (opsional)
+            unset($ruangans->perangkat); // Menghapus perangkat yang mencakup semua
+            return $ruangans;
+        });
+        return response()->json($ruangans);
     }
 }
