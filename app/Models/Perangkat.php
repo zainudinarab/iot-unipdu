@@ -8,7 +8,11 @@ class Perangkat extends Model
 {
 
     // Kolom yang dapat diisi
-    protected $fillable = ['ruangan_id', 'tipe', 'nama', 'kategori', 'nomor_urut', 'topic_mqtt', 'status'];
+    protected $fillable = ['ruangan_id', 'tipe', 'nama', 'kategori', 'nomor_urut', 'topic_mqtt', 'status', 'data_tambahan'];
+    // Cast kolom `data_tambahan` ke tipe array
+    protected $casts = [
+        'data_tambahan' => 'array',
+    ];
     public function status()
     {
         return $this->hasOne(StatusPerangkat::class);
