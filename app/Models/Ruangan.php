@@ -29,4 +29,12 @@ class Ruangan extends Model
     {
         return $this->hasMany(Perangkat::class);
     }
+    public function schedules()
+    {
+        return $this->hasMany(Schedule::class);
+    }
+    public function device()
+    {
+        return $this->belongsToMany(Device::class, 'device_ruangans')->withTimestamps();
+    }
 }

@@ -34,7 +34,7 @@ class Perangkat extends Model
         $tipe = strtolower($this->tipe); // relay, sensor, ir
         $kategori = strtolower($this->kategori); // ac, lampu, arus
         $nomor = $this->nomor_urut; // Nomor urut dalam kelas
-        return "gedung-{$gedung}/lantai-{$lantai}/ruangan-{$ruangan}/{$tipe}/{$kategori}{$nomor}";
+        return "{$gedung}/{$lantai}/{$ruangan}/{$tipe}/{$kategori}{$nomor}";
     }
     protected static function boot()
     {
