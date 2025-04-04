@@ -37,7 +37,7 @@
             <div class="mb-3">
                 <label for="relay_mask" class="form-label">Pilih Ruangan</label>
                 <select name="relay_mask" class="form-control" required>
-                    <option value="31">Ruangan 1 (00011111) → Relay 1-5</option>
+                    <option value="31">Ruangan 1 (0000011111) → Relay 1-5</option>
                     <option value="992">Ruangan 2 (1111100000) → Relay 6-10</option>
                 </select>
                 <small class="form-text text-muted">

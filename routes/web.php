@@ -30,3 +30,4 @@ Route::get('mqtt/message', [MqttController::class, 'getMqttMessage']);
 Route::resource('devices', DeviceController::class);
 Route::resource('schedules', ScheduleController::class);
 Route::post('/devices/sync/{deviceId}', [DeviceController::class, 'syncSchedules'])->name('devices.sync');
+Route::get('/devices/sync/{deviceId}', [DeviceController::class, 'syncSchedules'])->name('devices.sync');
