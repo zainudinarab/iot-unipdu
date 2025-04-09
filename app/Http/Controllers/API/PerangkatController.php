@@ -152,4 +152,29 @@ class PerangkatController extends Controller
         });
         return response()->json($ruangans);
     }
+    // untuk nodejs
+    // Di PerangkatController.php
+    public function mqttTopics()
+    {
+        return Perangkat::whereNotNull('topic_mqtt')
+            ->pluck('topic_mqtt')
+            ->toArray();
+    }
+    // update status perangkat dari nodejs
+    public function updateStatusFromNodejs(Request $request)
+    {
+        $topic = $request->input('topic');
+        $message = $request->input('message');
+    
+        $perangkat = Perangkat::where('topic_mqtt', $topic)->first();
+        if ($perangkat) {
+            // Misal message: '1' (ON) atau '0' (OFF)
+            $perangkat->status = $message == '1';
+            $perangkat->save();
+        }
+    
+        return response()->json(['status' => 'updated']);
+    }
+    
+
 }

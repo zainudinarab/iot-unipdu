@@ -32,6 +32,10 @@ Route::get('/lantais', [GedungController::class, 'getLantai']);
 // perangkatGrupRuangan
 Route::get('/perangkat-grup-ruangan', [PerangkatController::class, 'perangkatGrupRuangan']);
 
+// Di routes/api.php
+Route::get('/perangkat-topics', [PerangkatController::class, 'mqttTopics']);
+// updateStatusFromNodejs
+Route::post('/update-status-from-nodejs', [PerangkatController::class, 'updateStatusFromNodejs']);
 
 
 Route::get('/user', function (Request $request) {
