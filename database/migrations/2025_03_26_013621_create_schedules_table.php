@@ -15,6 +15,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('device_id')->constrained('devices')->onDelete('cascade');
             $table->foreignId('ruangan_id')->constrained('ruangans')->onDelete('cascade');
+            // grup_id
+            $table->unsignedInteger('grup_id');  // ID grup relay (misal 1, 2, 3)
             $table->tinyInteger('relay_mask'); // Menyimpan relay yang dikontrol dalam format biner
             $table->smallInteger('on_time');  // Waktu nyala dalam menit (misal 08:00 = 480)
             $table->smallInteger('off_time'); // Waktu mati dalam menit

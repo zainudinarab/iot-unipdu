@@ -27,6 +27,7 @@ class ScheduleController extends Controller
             'device_id' => 'required|exists:devices,id',
             'ruangan_id' => 'required|exists:ruangans,id',
             'relay_mask' => 'required|integer|min:1',
+            'grup_id' => 'required',
             'on_time' => 'required|date_format:H:i',
             'off_time' => 'required|date_format:H:i|after:on_time',
             'days' => 'required|array',
@@ -52,6 +53,7 @@ class ScheduleController extends Controller
             'device_id' => 'required|exists:devices,id',
             'ruangan_id' => 'required|exists:ruangans,id',
             'relay_mask' => 'required|integer|min:0|max:1023',
+            'grup_id' => 'required',
             'on_time' => 'required|date_format:H:i',  // Format harus "07:30"
             'off_time' => 'required|date_format:H:i',
             'days' => 'required|array|min:1|max:7', // Hari harus diisi dan maksimal 7

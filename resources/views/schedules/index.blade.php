@@ -16,6 +16,7 @@
                     <th>Device</th>
                     <th>Ruangan</th>
                     <th>Relay (Bin)</th>
+                    <th>Grup</th>
                     <th>Waktu ON</th>
                     <th>Waktu OFF</th>
                     <th>Aksi</th>
@@ -28,6 +29,7 @@
                         <td>{{ $schedule->device->name }}</td>
                         <td>{{ $schedule->ruangan->name }}</td>
                         <td>{{ sprintf('%08b', $schedule->relay_mask) }}</td>
+                        <td>{{ $schedule->grup_id }}</td>
                         <td>{{ $schedule->on_time }}</td>
                         <td>{{ $schedule->off_time }}</td>
                         <td>

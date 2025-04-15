@@ -13,6 +13,7 @@ class Schedule extends Model
         'device_id',
         'ruangan_id',
         'relay_mask',
+        'grup_id',
         'on_time',
         'off_time',
         'days',

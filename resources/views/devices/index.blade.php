@@ -42,12 +42,37 @@
                             @else
                                 <span class="badge bg-success">Sudah Sinkron</span>
                             @endif
+                            <button class="btn btn-success manual-control" data-action="ON" data-grup-id="0">
+                                on G0
+                            </button>
+
+                            <button class="btn btn-danger manual-control" data-action="OFF" data-grup-id="0">
+                                off G0
+                            </button>
+
+                            <button class="btn btn-success manual-control" data-action="ON" data-grup-id="1">
+                                on G1
+                            </button>
+
+                            <button class="btn btn-danger manual-control" data-action="OFF" data-grup-id="1">
+                                Off G1
+                            </button>
+
+                            <button class="btn btn-success manual-control" data-action="ON" data-grup-id="2">
+                                On G2
+                            </button>
+
+                            <button class="btn btn-danger manual-control" data-action="OFF" data-grup-id="2">
+                                Off G2
+                            </button>
+
                         </td>
                     </tr>
                 @endforeach
             </tbody>
         </table>
     </div>
+
     <script>
         document.querySelectorAll('.syncSchedules').forEach(button => {
             button.addEventListener('click', function() {
@@ -77,6 +102,44 @@
                         }
                     })
                     .catch(error => alert("Terjadi kesalahan!"));
+            });
+        });
+    </script>
+    <script>
+        document.querySelectorAll('.manual-control').forEach(button => {
+            button.addEventListener('click', function() {
+                let action = this.getAttribute('data-action'); // ON atau OFF
+                let grupID = this.getAttribute('data-grup-id'); // ID grup (0, 1, atau 2)
+
+                if (!confirm(
+                        `Apakah Anda yakin ingin ${action === 'ON' ? 'menghidupkan' : 'mematikan'} Grup ${grupID}?`
+                    )) {
+                    return;
+                }
+
+                // Kirim request POST ke controller
+                fetch(`/control/grup/${grupID}/${action}`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}', // CSRF token untuk keamanan
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            action: action
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log("Response dari server:", data); // Debugging log
+                        if (data.success) {
+                            alert(
+                                `Grup ${grupID} berhasil ${action === 'ON' ? 'dihidupkan' : 'dimatikan'}.`
+                            );
+                        } else {
+                            alert('Gagal mengirim perintah.');
+                        }
+                    })
+                    .catch(error => alert('Terjadi kesalahan!'));
             });
         });
     </script>

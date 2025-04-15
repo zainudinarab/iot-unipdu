@@ -85,31 +85,72 @@ class DeviceController extends Controller
         $device = Device::findOrFail($deviceId);
         $schedules = DB::table('schedules')
             ->where('device_id', $deviceId)
-            ->select(['relay_mask', 'on_time', 'off_time', 'days'])
+            ->select(['relay_mask', 'grup_id', 'on_time', 'off_time', 'days'])
             ->get();
-        $binaryPayloads = $schedules->map(function ($schedule) {
-            // Pastikan relay_mask selalu 10 bit
-            $relayMaskBinary = str_pad(decbin((int) $schedule->relay_mask), 10, "0", STR_PAD_LEFT);
-            $relayMaskInt = bindec($relayMaskBinary); // Ubah ke integer
-            return pack('n', $relayMaskInt)   // 2 byte (16-bit)
-                . pack('n', (int) $schedule->on_time)  // 2 byte
-                . pack('n', (int) $schedule->off_time) // 2 byte
-                . pack('C', (int) $schedule->days);    // 1 byte
-        })->implode(''); // Gabungkan semua dalam satu payload
-        $finalPayload = $binaryPayloads;
+        // $binaryPayloads = $schedules->map(function ($schedule) {
+        //     // Pastikan relay_mask selalu 10 bit
+        //     $relayMaskBinary = str_pad(decbin((int) $schedule->relay_mask), 10, "0", STR_PAD_LEFT);
+        //     $relayMaskInt = bindec($relayMaskBinary); // Ubah ke integer
+        //     return pack('n', $relayMaskInt)   // 2 byte (16-bit)
+        //         . pack('n', (int) $schedule->on_time)  // 2 byte
+        //         . pack('n', (int) $schedule->off_time) // 2 byte
+        //         . pack('C', (int) $schedule->days);    // 1 byte
+        // })->implode('');
+        // $finalPayload = $binaryPayloads;
+        // $finalPayload = $this->encodeSchedulesToBinary($schedules);
+        $finalPayload = $this->encodeSchedulesToBinary($schedules);
+
+        // Kirim ke ESP32 via MQTT
         $this->publishMessage2($device->mqtt_topic, $finalPayload);
         // $device->update(['sys' => false]);
         return response()->json([
             'status' => 'success',
+            // 'message' => $finalPayload,
+            // 'message' => 'Jadwal berhasi l dikirim'
             'message' => bin2hex($finalPayload),
         ]);
     }
+
+    public function sendManualControl($grupID, $action)
+    {
+        // Tentukan perintah berdasarkan aksi
+        if ($action === 'ON') {
+            $cmd = 0x80 + $grupID;  // Perintah hidupkan grup (ON)
+        } elseif ($action === 'OFF') {
+            $cmd = 0x90 + $grupID;  // Perintah matikan grup (OFF)
+        } else {
+            return response()->json(['error' => 'Aksi tidak valid'], 400);
+        }
+
+        // Buat payload biner (2 byte)
+        $payload = pack('CC', $grupID, $cmd);  // C = unsigned char (1 byte)
+
+        $topic = 'esp32/jadwal/update';
+        $this->publishMessage2($topic, $payload);  // ✅ Kirim biner
+
+        return response()->json(['success' => 'Perintah berhasil dikirim']);
+    }
+
+
 
     public function publishMessage($topic, $message)
     {
         $mqtt = MQTT::connection();
         $mqtt->publish($topic, $message);
         $mqtt->disconnect();
+    }
+    private function encodeSchedulesToBinary($schedules)
+    {
+        $binary = '';
+
+        foreach ($schedules as $s) {
+            $binary .= chr($s->grup_id);            // 1 byte
+            $binary .= chr($s->days);               // 1 byte
+            $binary .= pack('n', $s->on_time);      // 2 byte (big endian)
+            $binary .= pack('n', $s->off_time);     // 2 byte (big endian)
+        }
+
+        return $binary; // binary string ready to send
     }
     public function publishMessage2($topic, $message)
     {
@@ -131,7 +172,7 @@ class DeviceController extends Controller
                 ->setPassword($password); // Menambahkan password
             // Mencoba untuk melakukan koneksi
             $mqtt->connect($connectionSettings);
-            $mqtt->publish('device/123/schedules',$message, 0);
+            $mqtt->publish('esp32/jadwal/update', $message, 0);
             // $mqtt->publish('test/topic', $finalPayload, 0, false);
             // $mqtt->publish($topic, $message, 0);
             // Jika koneksi berhasil

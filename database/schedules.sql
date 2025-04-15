@@ -1,0 +1,4 @@
+CREATE TABLE "schedules" ("id" integer primary key autoincrement not null, "device_id" integer not null, "ruangan_id" integer not null, "grup_id" integer not null, "relay_mask" integer not null, "on_time" integer not null, "off_time" integer not null, "days" integer not null default '0', "created_at" datetime, "updated_at" datetime, foreign key("device_id") references "devices"("id") on delete cascade, foreign key("ruangan_id") references "ruangans"("id") on delete cascade);
+
+INSERT INTO "schedules" ("id", "device_id", "ruangan_id", "grup_id", "relay_mask", "on_time", "off_time", "days", "created_at", "updated_at") VALUES
+(1, 1, 1, 2, 31, 480, 540, 127, '2025-04-14 05:03:02', '2025-04-14 05:04:25');

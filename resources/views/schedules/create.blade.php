@@ -44,7 +44,17 @@
                     Pilih relay sesuai ruangan: Ruangan 1 (Relay 1-5), Ruangan 2 (Relay 6-10).
                 </small>
             </div>
-
+            <div class="mb-3">
+                <label for="relay_mask" class="form-label">Pilih Grup</label>
+                <select name="grup_id" class="form-control" required>
+                    <option value="0">Grup 1 → Relay 1-5</option>
+                    <option value="1">Grup 2 → Relay 6-10</option>
+                    <option value="2">Grup 3 → Relay 11-15</option>
+                </select>
+                <small class="form-text text-muted">
+                    Pilih relay sesuai ruangan: Ruangan 1 (Relay 1-5), Ruangan 2 (Relay 6-10).
+                </small>
+            </div>
 
 
             <div class="mb-3">
