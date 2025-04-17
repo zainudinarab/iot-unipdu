@@ -10,9 +10,9 @@ use App\Models\Schedule;
 use Illuminate\Support\Facades\DB;
 use PhpMqtt\Client\MqttClient;
 use PhpMqtt\Client\ConnectionSettings;
-
-
-
+use Illuminate\Support\Str;
+use App\Models\Perangkat;
+use Nette\Utils\Random;
 
 class DeviceController extends Controller
 {
@@ -33,15 +33,33 @@ class DeviceController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'mac_address' => 'required|string|max:255|unique:devices',
-            'ruangan_id' => 'required|array|min:1|max:2', // Maksimal 2 ruangan
+            'ruangan_id' => 'required|array|min:1|max:3', // Maksimal 2 ruangan
             'ruangan_id.*' => 'exists:ruangans,id'
         ]);
-
+        // Buat Device baru
         $device = Device::create([
             'name' => $request->name,
             'mac_address' => $request->mac_address,
+            'mqtt_topic' => 'esp32-' . Str::slug($request->name), // bisa disesuaikan
         ]);
-        $device->ruangans()->attach($request->ruangan_id);
+
+
+        // Map ruangan dengan group_index
+        // Persiapan sinkronisasi pivot
+
+        $ruanganWithGroup = [];
+        foreach ($request->ruangan_id as $index => $ruanganId) {
+            $ruanganWithGroup[$ruanganId] = ['group_index' => $index];
+            // Ambil semua perangkat di ruangan ini
+            $perangkatList = Perangkat::where('ruangan_id', $ruanganId)->get();
+            foreach ($perangkatList as $perangkat) {
+                $topic = $device->mqtt_topic . '/g' . $index . '/' . strtolower($perangkat->tipe);
+                $perangkat->update(['topic_mqtt' => $topic]);
+            }
+        }
+
+        // Attach dengan data pivot tambahan
+        $device->ruangans()->attach($ruanganWithGroup);
         return redirect()->route('devices.index')->with('success', 'Device berhasil ditambahkan.');
     }
 
@@ -60,7 +78,7 @@ class DeviceController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'mac_address' => 'required|string|max:255|unique:devices,mac_address,' . $device->id,
-            'ruangan_id' => 'required|array|min:1|max:2',
+            'ruangan_id' => 'required|array|min:1|max:3',
             'ruangan_id.*' => 'exists:ruangans,id'
         ]);
 
@@ -69,7 +87,28 @@ class DeviceController extends Controller
             'mac_address' => $request->mac_address,
         ]);
 
-        $device->ruangans()->sync($request->ruangan_id);
+        // Siapkan data untuk sync dengan group_index
+        $syncData = [];
+        foreach ($request->ruangan_id as $index => $ruanganId) {
+            $syncData[$ruanganId] = ['group_index' => $index];
+        }
+        $device->ruangans()->sync($syncData);
+
+        // Update topic_mqtt untuk perangkat-perangkat yang terhubung ke ruangan
+        foreach ($request->ruangan_id as $ruanganId) {
+            $perangkatList = Perangkat::where('ruangan_id', $ruanganId)->get();
+
+            foreach ($perangkatList as $perangkat) {
+                $randomString = Str::random(8);  // menghasilkan string acak dengan panjang 8 karakter
+
+                $topicMqtt = 'esp32/' . Str::slug($device->mac_address) . '/device/' . $device->id . '/ruangan/' . $ruanganId . '/grup/' . array_search($ruanganId, $request->ruangan_id) . '/random/' . $randomString;
+
+                // Update topic_mqtt untuk perangkat
+                $perangkat->update([
+                    'topic_mqtt' => $topicMqtt
+                ]);
+            }
+        }
         return redirect()->route('devices.index')->with('success', 'Device berhasil diperbarui.');
     }
 
@@ -101,7 +140,8 @@ class DeviceController extends Controller
         $finalPayload = $this->encodeSchedulesToBinary($schedules);
 
         // Kirim ke ESP32 via MQTT
-        $this->publishMessage2($device->mqtt_topic, $finalPayload);
+        $topic = 'esp32/device001/jadwal/update';
+        $this->publishMessage2($topic, $finalPayload);
         // $device->update(['sys' => false]);
         return response()->json([
             'status' => 'success',
@@ -125,7 +165,7 @@ class DeviceController extends Controller
         // Buat payload biner (2 byte)
         $payload = pack('CC', $grupID, $cmd);  // C = unsigned char (1 byte)
 
-        $topic = 'esp32/jadwal/update';
+        $topic = 'esp32/device001/grup/manual';
         $this->publishMessage2($topic, $payload);  // ✅ Kirim biner
 
         return response()->json(['success' => 'Perintah berhasil dikirim']);
@@ -172,7 +212,7 @@ class DeviceController extends Controller
                 ->setPassword($password); // Menambahkan password
             // Mencoba untuk melakukan koneksi
             $mqtt->connect($connectionSettings);
-            $mqtt->publish('esp32/jadwal/update', $message, 0);
+            $mqtt->publish($topic, $message, 0);
             // $mqtt->publish('test/topic', $finalPayload, 0, false);
             // $mqtt->publish($topic, $message, 0);
             // Jika koneksi berhasil

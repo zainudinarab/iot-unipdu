@@ -19,9 +19,15 @@ class Device extends Model
     {
         return $this->hasMany(Schedule::class);
     }
+    // public function ruangans()
+    // {
+    //     return $this->belongsToMany(Ruangan::class, 'device_ruangans')->withTimestamps();
+    // }
     public function ruangans()
     {
-        return $this->belongsToMany(Ruangan::class, 'device_ruangans')->withTimestamps();
+        return $this->belongsToMany(Ruangan::class, 'device_ruangans')
+            ->withPivot('group_index')
+            ->withTimestamps();
     }
 
     public function canAddRuangan()

@@ -45,17 +45,7 @@
                         Relay 6-10</option>
                 </select>
             </div>
-            <div class="mb-3">
-                <label for="relay_mask" class="form-label">Pilih Grup</label>
-                <select name="grup_id" class="form-control" required>
-                    <option value="0" {{ $schedule->grup_id == 0 ? 'selected' : '' }}>Grup 1 → Relay 1-5</option>
-                    <option value="1" {{ $schedule->grup_id == 1 ? 'selected' : '' }}>Grup 2 → Relay 6-10</option>
-                    <option value="2" {{ $schedule->grup_id == 2 ? 'selected' : '' }}>Grup 3 → Relay 11-15</option>
-                </select>
-                <small class="form-text text-muted">
-                    Pilih relay sesuai ruangan: Ruangan 1 (Relay 1-5), Ruangan 2 (Relay 6-10).
-                </small>
-            </div>
+
 
             <div class="mb-3">
                 <label for="on_time" class="form-label">Waktu ON</label>
@@ -64,8 +54,7 @@
 
             <div class="mb-3">
                 <label for="off_time" class="form-label">Waktu OFF</label>
-                <input type="time" name="off_time" id="off_time" class="form-control"
-                    value="{{ $schedule->off_time }}">
+                <input type="time" name="off_time" id="off_time" class="form-control" value="{{ $schedule->off_time }}">
             </div>
             <div class="mb-3">
                 <label>Hari Aktif</label><br>

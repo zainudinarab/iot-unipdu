@@ -26,10 +26,12 @@ return new class extends Migration
             $table->id();
             $table->foreignId('device_id')->constrained()->onDelete('cascade');
             $table->foreignId('ruangan_id')->constrained()->onDelete('cascade');
+            $table->unsignedTinyInteger('group_index'); // Kolom grup 0–255
             $table->timestamps();
 
             $table->unique(['device_id', 'ruangan_id']); // Hindari duplikasi hubungan
             $table->unique('ruangan_id'); // Pastikan ruangan hanya bisa terhubung ke satu device
+            $table->unique(['device_id', 'group_index']); // Satu group index unik per device
         });
     }
 
