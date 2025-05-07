@@ -16,7 +16,7 @@
 
         <form action="{{ route('schedules.store') }}" method="POST">
             @csrf
-            <div class="mb-3">
+            {{-- <div class="mb-3">
                 <label for="device_id" class="form-label">Pilih Device</label>
                 <select name="device_id" id="device_id" class="form-control" required>
                     <option value="">Pilih Device</option>
@@ -32,18 +32,16 @@
                 <select name="ruangan_id" id="ruangan_id" class="form-control" required>
                     <option value="">Pilih Ruangan</option>
                 </select>
-            </div>
+            </div> --}}
 
-            <div class="mb-3">
-                <label for="relay_mask" class="form-label">Pilih Ruangan</label>
-                <select name="relay_mask" class="form-control" required>
-                    <option value="31">Ruangan 1 (0000011111) → Relay 1-5</option>
-                    <option value="992">Ruangan 2 (1111100000) → Relay 6-10</option>
-                </select>
-                <small class="form-text text-muted">
-                    Pilih relay sesuai ruangan: Ruangan 1 (Relay 1-5), Ruangan 2 (Relay 6-10).
-                </small>
-            </div>
+            <select name="ruangan_id" class="form-control" required id="ruangan_id">
+                <option value="">Pilih Ruangan</option>
+                @foreach ($ruanganTerhubung as $ruangan)
+                    <option value="{{ $ruangan->id }}" data-group-index="{{ $ruangan->group_index }}">
+                        {{ $ruangan->name }} (Grup {{ $ruangan->group_index }})
+                    </option>
+                @endforeach
+            </select>
 
 
 
@@ -69,7 +67,7 @@
             <button type="submit" class="btn btn-primary">Simpan Jadwal</button>
         </form>
     </div>
-    <script>
+    {{-- <script>
         document.getElementById('device_id').addEventListener('change', function() {
             let selectedOption = this.options[this.selectedIndex];
             let ruangans = JSON.parse(selectedOption.dataset.ruangans || '[]'); // Ambil ruangan dari data-ruangans
@@ -84,6 +82,26 @@
                 ruanganSelect.appendChild(option);
             });
         });
+    </script> --}}
+    <script>
+        document.getElementById('ruangan_id').addEventListener('change', function() {
+            const selected = this.options[this.selectedIndex];
+            const groupIndex = selected.dataset.groupIndex;
+
+            console.log('Group index:', groupIndex);
+            // Bisa kamu pakai untuk isi field tersembunyi kalau perlu
+            // document.getElementById('grup_id').value = groupIndex;
+        });
     </script>
+
+    <script>
+        $(document).ready(function() {
+            $('#ruangan_id').select2({
+                placeholder: "Cari ruangan...",
+                allowClear: true
+            });
+        });
+    </script>
+
 @endsection
 {{-- section('content')  --}}

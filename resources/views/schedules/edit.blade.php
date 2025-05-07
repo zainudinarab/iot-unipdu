@@ -36,15 +36,6 @@
                 </select>
             </div>
 
-            <div class="mb-3">
-                <label for="relay_mask" class="form-label">Pilih Ruangan</label>
-                <select name="relay_mask" class="form-control" required>
-                    <option value="31" {{ $schedule->relay_mask == 31 ? 'selected' : '' }}>Ruangan 1 (00011111) → Relay
-                        1-5</option>
-                    <option value="992" {{ $schedule->relay_mask == 992 ? 'selected' : '' }}>Ruangan 2 (1111100000) →
-                        Relay 6-10</option>
-                </select>
-            </div>
 
 
             <div class="mb-3">

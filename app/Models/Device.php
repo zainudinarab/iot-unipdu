@@ -11,8 +11,15 @@ class Device extends Model
 
     protected $fillable = [
         'name',
+        'device_type',
+        'device_model',
         'mac_address',
         'mqtt_topic',
+        'location',
+        'firmware_version',
+        'ip_address',
+        'status',
+        'sys'
     ];
 
     public function schedules()
@@ -26,8 +33,13 @@ class Device extends Model
     public function ruangans()
     {
         return $this->belongsToMany(Ruangan::class, 'device_ruangans')
-            ->withPivot('group_index')
+            ->withPivot(['group_index', 'status']) // <- status diambil juga
             ->withTimestamps();
+    }
+    // Relasi dengan device_ac_ir
+    public function acIrData()
+    {
+        return $this->hasMany(DeviceIr::class);
     }
 
     public function canAddRuangan()

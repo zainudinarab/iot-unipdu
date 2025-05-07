@@ -34,38 +34,60 @@
                                 @method('DELETE')
                                 <button type="submit" class="btn btn-danger btn-sm">Hapus</button>
                             </form>
-
-                            @if ($device->sys)
+                            @if (!$device->sys)
                                 <button class="btn btn-warning syncSchedules" data-device-id="{{ $device->id }}">
                                     Sinkronkan
                                 </button>
                             @else
                                 <span class="badge bg-success">Sudah Sinkron</span>
                             @endif
-                            <button class="btn btn-success manual-control" data-action="ON" data-grup-id="0">
+
+                            <a href="{{ route('device.jadwalUpload', $device->id) }}" class="btn btn-warning">
+                                Upload Jadwal
+                            </a>
+
+
+                            <button class="btn btn-success manual-control" data-action="ON" data-grup-id="0"
+                                data-device-id="{{ $device->id }}">
                                 on G0
                             </button>
 
-                            <button class="btn btn-danger manual-control" data-action="OFF" data-grup-id="0">
+                            <button class="btn btn-danger manual-control" data-action="OFF" data-grup-id="0"
+                                data-device-id="{{ $device->id }}">
                                 off G0
                             </button>
 
-                            <button class="btn btn-success manual-control" data-action="ON" data-grup-id="1">
+                            <button class="btn btn-success manual-control" data-action="ON" data-grup-id="1"
+                                data-device-id="{{ $device->id }}">
                                 on G1
                             </button>
 
-                            <button class="btn btn-danger manual-control" data-action="OFF" data-grup-id="1">
+                            <button class="btn btn-danger manual-control" data-action="OFF" data-grup-id="1"
+                                data-device-id="{{ $device->id }}">
                                 Off G1
                             </button>
 
-                            <button class="btn btn-success manual-control" data-action="ON" data-grup-id="2">
+                            <button class="btn btn-success manual-control" data-action="ON" data-grup-id="2"
+                                data-device-id="{{ $device->id }}">
                                 On G2
                             </button>
 
                             <button class="btn btn-danger manual-control" data-action="OFF" data-grup-id="2">
                                 Off G2
                             </button>
-
+                            <!-- Tombol untuk menambahkan IR di device -->
+                            <a href="{{ route('device.ir.create', ['deviceId' => $device->id, 'acIndex' => 0]) }}"
+                                class="btn btn-primary btn-sm">Tambah IR (AC 1)</a>
+                            <a href="{{ route('device.ir.create', ['deviceId' => $device->id, 'acIndex' => 1]) }}"
+                                class="btn btn-primary btn-sm">Tambah IR (AC 2)</a>
+                            <a href="{{ route('device.ir.create', ['deviceId' => $device->id, 'acIndex' => 2]) }}"
+                                class="btn btn-primary btn-sm">Tambah IR (AC 3)</a>
+                            <a href="{{ route('device.ir.create', ['deviceId' => $device->id, 'acIndex' => 3]) }}"
+                                class="btn btn-primary btn-sm">Tambah IR (AC 4)</a>
+                            <a href="{{ route('device.ir.create', ['deviceId' => $device->id, 'acIndex' => 4]) }}"
+                                class="btn btn-primary btn-sm">Tambah IR (AC 5)</a>
+                            <a href="{{ route('device.ir.create', ['deviceId' => $device->id, 'acIndex' => 5]) }}"
+                                class="btn btn-primary btn-sm">Tambah IR (AC 6)</a>
                         </td>
                     </tr>
                 @endforeach
@@ -110,6 +132,8 @@
             button.addEventListener('click', function() {
                 let action = this.getAttribute('data-action'); // ON atau OFF
                 let grupID = this.getAttribute('data-grup-id'); // ID grup (0, 1, atau 2)
+                let deviceID = this.getAttribute('data-device-id'); // ID grup (0, 1, atau 2)
+
 
                 if (!confirm(
                         `Apakah Anda yakin ingin ${action === 'ON' ? 'menghidupkan' : 'mematikan'} Grup ${grupID}?`
