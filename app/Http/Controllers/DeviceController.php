@@ -14,6 +14,8 @@ use Illuminate\Support\Str;
 use App\Models\Perangkat;
 use Nette\Utils\Random;
 use App\Models\JadwalRuangan;
+use App\Models\DeviceControl;
+use App\Services\DeviceControlService;
 
 class DeviceController extends Controller
 {
@@ -22,6 +24,25 @@ class DeviceController extends Controller
         $devices = Device::all();
         return view('devices.index', compact('devices'));
     }
+    public function management(Device $device)
+    {
+        // Ambil ruangan terhubung ke device, urut berdasarkan group_index dari pivot
+        $ruangans = $device->ruangans()
+            ->withPivot('group_index')
+            ->orderBy('pivot_group_index')
+            ->get();
+
+        // Ambil deviceControl terhubung ke device dan dikelompokkan per ruangan
+        $deviceControls = DeviceControl::where('device_id', $device->id)
+            ->with('ruangan')
+            ->get()
+            ->groupBy('ruangan_id');
+
+
+        return view('devices.management', compact('device', 'ruangans', 'deviceControls'));
+    }
+
+
 
     public function create()
     {
@@ -29,7 +50,7 @@ class DeviceController extends Controller
         return view('devices.create', compact('ruangans'));
     }
 
-    public function store(Request $request)
+    public function store(Request $request, DeviceControlService $controlService)
     {
         $request->validate([
             'name' => 'required|string|max:255',
@@ -79,6 +100,9 @@ class DeviceController extends Controller
 
         // Attach dengan data pivot tambahan
         $device->ruangans()->attach($ruanganWithGroup);
+        // Reindex perangkat yang terhubung ke ruangan
+        $controlService->syncDeviceControlsIndex($device, $ruanganWithGroup);
+
         return redirect()->route('devices.index')->with('success', 'Device berhasil ditambahkan.');
     }
 
@@ -92,7 +116,7 @@ class DeviceController extends Controller
         return view('devices.edit', compact('device', 'ruangans'));
     }
 
-    public function update(Request $request, Device $device)
+    public function update(Request $request, Device $device, DeviceControlService $controlService)
     {
         $request->validate([
             'name' => 'required|string|max:255',
@@ -105,23 +129,31 @@ class DeviceController extends Controller
             'name' => $request->name,
             'mac_address' => $request->mac_address,
         ]);
-
+        // Ambil ruangan yang sebelumnya terhubung
+        $oldRuanganIds = $device->ruangans->pluck('id')->toArray();
         // Siapkan data untuk sync dengan group_index
         $syncData = [];
         foreach ($request->ruangan_id as $index => $ruanganId) {
             $syncData[$ruanganId] = ['group_index' => $index];
         }
         $device->ruangans()->sync($syncData);
-
+        // Cari ruangan yang dilepas dari hubungan
+        $newRuanganIds = array_keys($syncData);
+        $removedRuanganIds = array_diff($oldRuanganIds, $newRuanganIds);
+        // dd($removedRuanganIds);
+        // Null-kan device_id untuk kontrol di ruangan yang tidak lagi terhubung
+        if (!empty($removedRuanganIds)) {
+            DeviceControl::where('device_id', $device->id)
+                ->whereIn('ruangan_id', $removedRuanganIds)
+                ->update(['device_id' => null]);
+        }
+        $controlService->syncDeviceControlsIndex($device, $syncData);
         // Update topic_mqtt untuk perangkat-perangkat yang terhubung ke ruangan
         foreach ($request->ruangan_id as $ruanganId) {
             $perangkatList = Perangkat::where('ruangan_id', $ruanganId)->get();
-
             foreach ($perangkatList as $perangkat) {
                 $randomString = Str::random(8);  // menghasilkan string acak dengan panjang 8 karakter
-
                 $topicMqtt = 'esp32/' . Str::slug($device->mac_address) . '/device/' . $device->id . '/ruangan/' . $ruanganId . '/grup/' . array_search($ruanganId, $request->ruangan_id) . '/random/' . $randomString;
-
                 // Update topic_mqtt untuk perangkat
                 $perangkat->update([
                     'topic_mqtt' => $topicMqtt
@@ -172,19 +204,26 @@ class DeviceController extends Controller
     {
         // Tentukan perintah berdasarkan aksi
         if ($action === 'ON') {
-            $cmd = 0x80 + $grupID;  // Perintah hidupkan grup (ON)
+            $cmd = 'on';  // Perintah hidupkan grup (ON)
         } elseif ($action === 'OFF') {
-            $cmd = 0x90 + $grupID;  // Perintah matikan grup (OFF)
+            $cmd = 'off';  // Perintah matikan grup (OFF)
         } else {
             return response()->json(['error' => 'Aksi tidak valid'], 400);
         }
-        // Buat payload biner (2 byte)
-        $payload = pack('CC', $grupID, $cmd);  // C = unsigned char (1 byte)
-        $topic = 'esp32-00004/grup/manual';
-        $this->publishMessage2($topic, $payload);  // ✅ Kirim biner
+
+        // Payload dalam format JSON
+        $payload = json_encode([
+            'type' => 'grup',  // Mengindikasikan tipe perintah grup AC
+            'id' => $grupID,     // ID grup yang ingin dikendalikan
+            'action' => $cmd,    // Aksi 'on' atau 'off'
+        ]);
+
+        $topic = 'esp32-00004/cmd';  // Topik yang tepat untuk kontrol manual grup
+        $this->publishMessage2($topic, $payload);  // Mengirimkan payload dalam JSON
 
         return response()->json(['success' => 'Perintah berhasil dikirim']);
     }
+
 
 
 

@@ -14,7 +14,14 @@
                 {{ session('error') }}
             </div>
         @endif
+        {{-- Tombol Aksi --}}
+        <div class="d-flex flex-wrap gap-2 my-3">
 
+
+            <a href="{{ url()->previous() }}" class="btn btn-outline-secondary">
+                ⬅️ Kembali
+            </a>
+        </div>
         <!-- Form untuk menambah data raw IR -->
         <form action="{{ route('device.ir.store', ['device' => $device->id, 'acIndex' => $acIndex]) }}" method="POST">
             @csrf

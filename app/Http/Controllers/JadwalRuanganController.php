@@ -10,7 +10,9 @@ class JadwalRuanganController extends Controller
 {
     public function index()
     {
-        $jadwals = JadwalRuangan::all();
+        // $jadwals = JadwalRuangan::all();
+        $jadwals = JadwalRuangan::paginate(10); // 10 data per halaman
+
         return view('jadwal_ruangans.index', compact('jadwals'));
     }
 

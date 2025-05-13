@@ -21,6 +21,13 @@
             </thead>
             <tbody>
                 @foreach ($devices as $index => $device)
+                    @php
+                        // Kelompokkan berdasarkan group_index
+                        $groupData = $device->ruangans->groupBy('pivot.group_index')->map(function ($groupedRuangans) {
+                            // Ambil status ON/OFF — misalnya status salah satu ruangan di grup
+                            return $groupedRuangans->first()->pivot->status;
+                        });
+                    @endphp
                     <tr>
                         <td>{{ $index + 1 }}</td>
                         <td>{{ $device->name }}</td>
@@ -34,47 +41,18 @@
                                 @method('DELETE')
                                 <button type="submit" class="btn btn-danger btn-sm">Hapus</button>
                             </form>
-                            @if (!$device->sys)
+                            {{-- @if (!$device->sys)
                                 <button class="btn btn-warning syncSchedules" data-device-id="{{ $device->id }}">
                                     Sinkronkan
                                 </button>
                             @else
                                 <span class="badge bg-success">Sudah Sinkron</span>
-                            @endif
+                            @endif --}}
 
                             <a href="{{ route('device.jadwalUpload', $device->id) }}" class="btn btn-warning">
                                 Upload Jadwal
                             </a>
 
-
-                            <button class="btn btn-success manual-control" data-action="ON" data-grup-id="0"
-                                data-device-id="{{ $device->id }}">
-                                on G0
-                            </button>
-
-                            <button class="btn btn-danger manual-control" data-action="OFF" data-grup-id="0"
-                                data-device-id="{{ $device->id }}">
-                                off G0
-                            </button>
-
-                            <button class="btn btn-success manual-control" data-action="ON" data-grup-id="1"
-                                data-device-id="{{ $device->id }}">
-                                on G1
-                            </button>
-
-                            <button class="btn btn-danger manual-control" data-action="OFF" data-grup-id="1"
-                                data-device-id="{{ $device->id }}">
-                                Off G1
-                            </button>
-
-                            <button class="btn btn-success manual-control" data-action="ON" data-grup-id="2"
-                                data-device-id="{{ $device->id }}">
-                                On G2
-                            </button>
-
-                            <button class="btn btn-danger manual-control" data-action="OFF" data-grup-id="2">
-                                Off G2
-                            </button>
                             <!-- Tombol untuk menambahkan IR di device -->
                             <a href="{{ route('device.ir.create', ['deviceId' => $device->id, 'acIndex' => 0]) }}"
                                 class="btn btn-primary btn-sm">Tambah IR (AC 1)</a>
@@ -84,10 +62,28 @@
                                 class="btn btn-primary btn-sm">Tambah IR (AC 3)</a>
                             <a href="{{ route('device.ir.create', ['deviceId' => $device->id, 'acIndex' => 3]) }}"
                                 class="btn btn-primary btn-sm">Tambah IR (AC 4)</a>
-                            <a href="{{ route('device.ir.create', ['deviceId' => $device->id, 'acIndex' => 4]) }}"
-                                class="btn btn-primary btn-sm">Tambah IR (AC 5)</a>
-                            <a href="{{ route('device.ir.create', ['deviceId' => $device->id, 'acIndex' => 5]) }}"
-                                class="btn btn-primary btn-sm">Tambah IR (AC 6)</a>
+                            @foreach ($groupData as $groupIndex => $status)
+                                @php
+                                    // Ambil nama ruangan berdasarkan group_index
+                                    $ruangan = $device->ruangans->firstWhere('pivot.group_index', $groupIndex);
+                                    $ruanganName = $ruangan ? $ruangan->name : 'Unknown'; // Jika tidak ada, tampilkan 'Unknown'
+                                @endphp
+                                <div class="form-check form-switch">
+                                    <!-- Toggle switch -->
+                                    <input class="form-check-input" type="checkbox" role="switch"
+                                        id="statusSwitch{{ $groupIndex }}" data-grup-id="{{ $groupIndex }}"
+                                        {{ $status ? 'checked' : '' }}>
+
+                                    <label class="form-check-label" for="statusSwitch{{ $groupIndex }}">Kelas
+                                        : {{ $ruanganName }} ({{ $groupIndex }})</label>
+                                </div>
+                            @endforeach
+                            <a href="{{ route('device.management', ['device' => $device->id]) }}"
+                                class="btn btn-primary mb-3">
+                                Manajemen Kontrol Perangkat
+                            </a>
+
+
                         </td>
                     </tr>
                 @endforeach
@@ -127,21 +123,14 @@
             });
         });
     </script>
+
     <script>
-        document.querySelectorAll('.manual-control').forEach(button => {
-            button.addEventListener('click', function() {
-                let action = this.getAttribute('data-action'); // ON atau OFF
-                let grupID = this.getAttribute('data-grup-id'); // ID grup (0, 1, atau 2)
-                let deviceID = this.getAttribute('data-device-id'); // ID grup (0, 1, atau 2)
+        document.querySelectorAll('.form-check-input').forEach(switchElement => {
+            switchElement.addEventListener('change', function() {
+                const grupID = this.dataset.grupId; // Ambil ID grup
+                const action = this.checked ? 'ON' :
+                    'OFF'; // Tentukan status berdasarkan apakah switch dicentang
 
-
-                if (!confirm(
-                        `Apakah Anda yakin ingin ${action === 'ON' ? 'menghidupkan' : 'mematikan'} Grup ${grupID}?`
-                    )) {
-                    return;
-                }
-
-                // Kirim request POST ke controller
                 fetch(`/control/grup/${grupID}/${action}`, {
                         method: 'POST',
                         headers: {
@@ -150,20 +139,19 @@
                         },
                         body: JSON.stringify({
                             action: action
-                        })
+                        }) // Kirim data action (ON/OFF)
                     })
                     .then(response => response.json())
                     .then(data => {
-                        console.log("Response dari server:", data); // Debugging log
-                        if (data.success) {
-                            alert(
-                                `Grup ${grupID} berhasil ${action === 'ON' ? 'dihidupkan' : 'dimatikan'}.`
-                            );
-                        } else {
-                            alert('Gagal mengirim perintah.');
-                        }
+                        // Tampilkan notifikasi sukses jika diperlukan
+                        alert(`Group G${grupID} berhasil di-${action}`);
                     })
-                    .catch(error => alert('Terjadi kesalahan!'));
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Terjadi kesalahan saat mengubah status');
+                        // Kembalikan toggle switch ke status semula jika terjadi error
+                        this.checked = !this.checked;
+                    });
             });
         });
     </script>

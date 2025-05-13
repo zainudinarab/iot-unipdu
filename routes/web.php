@@ -9,6 +9,10 @@ use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\DeviceAcIrController;
 use App\Http\Controllers\JadwalRuanganController;
+use App\Http\Controllers\DeviceControlController;
+use App\Http\Controllers\ControlCommandController;
+
+
 
 
 
@@ -60,3 +64,23 @@ Route::get('/devices/sync/{deviceId}', [DeviceController::class, 'syncSchedules'
 Route::post('/control/grup/{grupID}/{action}', [DeviceController::class, 'sendManualControl']);
 Route::get('/device/{device}/jadwal-upload', [DeviceController::class, 'jadwalUploadPage'])->name('device.jadwalUpload');
 Route::post('/device/{device}/upload-jadwal', [DeviceController::class, 'uploadToEsp32'])->name('device.uploadToEsp32');
+Route::get('/device/{device}/management', [DeviceController::class, 'management'])->name('device.management');
+// Tampilkan form tambah kontrol
+Route::get('/device/{device}/control/create/{ruangan}', [DeviceControlController::class, 'create'])->name('device.control.create');
+Route::post('/device/{device}/control', [DeviceControlController::class, 'store'])->name('device.control.store');
+Route::delete('device-controls/{deviceControl}', [DeviceControlController::class, 'destroy'])->name('device-controls.destroy');
+// Route untuk menampilkan halaman manajemen kontrol perangkat
+
+
+
+Route::prefix('control-commands')->name('control-commands.')->group(function () {
+    // Menampilkan daftar perintah (khusus 1 device_control_id)
+    Route::get('/{device_control}/index', [ControlCommandController::class, 'showIndexForm'])->name('index');
+    Route::get('/create/{device_control}', [ControlCommandController::class, 'create'])->name('create');
+    Route::post('/', [ControlCommandController::class, 'store'])->name('store');
+    Route::get('/{command}/edit', [ControlCommandController::class, 'edit'])->name('edit');
+    Route::put('/{command}', [ControlCommandController::class, 'update'])->name('update');
+    Route::delete('/{command}', [ControlCommandController::class, 'destroy'])->name('destroy');
+    Route::get('/{command}/test', [ControlCommandController::class, 'test'])->name('test');
+    Route::get('/{device_control}/update-code', [ControlCommandController::class, 'updateCode'])->name('update-code');
+});

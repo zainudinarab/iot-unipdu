@@ -133,7 +133,8 @@ class DeviceAcIrController extends Controller
             ];
 
             $jsonPayload = json_encode($payload);
-            $topic = 'esp32-00004/ac/update/' . ($isOn ? 'on' : 'off') . '/' . $acIndex;
+            $topic = 'esp32-00004/ir/update/' . $acIndex . '/' . ($isOn ? 'on' : 'off');
+
 
             $this->publishMessage2($topic, $jsonPayload);
 

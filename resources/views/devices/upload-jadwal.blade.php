@@ -2,7 +2,13 @@
 
 @section('content')
     <h4>Jadwal untuk Device: {{ $device->nama }}</h4>
+    <div class="d-flex flex-wrap gap-2 my-3">
 
+
+        <a href="{{ url()->previous() }}" class="btn btn-outline-secondary">
+            ⬅️ Kembali
+        </a>
+    </div>
     {{-- Notifikasi --}}
     @if (session('success'))
         <div class="alert alert-success mt-2">{{ session('success') }}</div>

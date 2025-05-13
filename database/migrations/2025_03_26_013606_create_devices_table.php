@@ -37,9 +37,9 @@ return new class extends Migration
             $table->boolean('status')->default(false); // Tambahkan ini (false = OFF, true = ON)
             $table->timestamps();
 
-            $table->unique(['device_id', 'ruangan_id']); // Hindari duplikasi hubungan
-            $table->unique('ruangan_id'); // Pastikan ruangan hanya bisa terhubung ke satu device
-            $table->unique(['device_id', 'group_index']); // Satu group index unik per device
+            // $table->unique(['device_id', 'ruangan_id']); // Hindari duplikasi hubungan
+            // $table->unique('ruangan_id'); // Pastikan ruangan hanya bisa terhubung ke satu device
+            // $table->unique(['device_id', 'group_index']); // Satu group index unik per device
         });
         Schema::create('device_irs', function (Blueprint $table) {
             $table->id();

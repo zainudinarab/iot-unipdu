@@ -43,4 +43,8 @@ class Ruangan extends Model
             ->withPivot('group_index')
             ->withTimestamps();
     }
+    public function deviceControls()
+    {
+        return $this->hasMany(DeviceControl::class);
+    }
 }
