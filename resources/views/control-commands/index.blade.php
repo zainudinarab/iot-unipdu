@@ -50,7 +50,8 @@
                             <tr>
                                 <td>{{ $i + 1 }}</td>
                                 <td>{{ $command->command_type }}</td>
-                                <td><code>{{ Str::limit($command->data, 100) }}</code></td>
+                                <td><code>{{ Str::limit(implode(',', $command->data), 100) }}</code></td>
+
                                 <td>
                                     <a href="{{ route('control-commands.edit', $command->id) }}"
                                         class="btn btn-warning">Edit</a>

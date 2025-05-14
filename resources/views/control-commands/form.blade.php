@@ -26,10 +26,8 @@
                 </select>
             </div>
 
-            <div class="mb-3">
-                <label for="data" class="form-label">Kode IR / Data</label>
-                <textarea name="data" id="data" class="form-control" rows="5" required>{{ old('data', $command->data ?? '') }}</textarea>
-            </div>
+            <textarea name="data" id="data" class="form-control" rows="5" required>{{ old('data', isset($command->data) ? implode(',', $command->data) : '') }}</textarea>
+
 
             <button type="submit" class="btn btn-{{ isset($command) ? 'primary' : 'success' }}">
                 {{ isset($command) ? '💾 Update' : '💾 Simpan' }}

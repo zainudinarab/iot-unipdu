@@ -29,43 +29,45 @@ class ControlCommandController extends Controller
 
 
     public function store(Request $request)
-    {
-        $validated = $request->validate([
-            'device_control_id' => 'required|exists:device_controls,id',
-            'command_type' => 'required|in:ON,OFF',
-            'data' => 'required|string',
+{
+    $validated = $request->validate([
+        'device_control_id' => 'required|exists:device_controls,id',
+        'command_type' => 'required|in:ON,OFF',
+        'data' => 'required|string', // Format: "1,2,3,4"
+    ]);
+
+    // Ubah input string ke array integer
+    $rawData = array_map('intval', explode(',', $validated['data']));
+
+    $existingCommand = ControlCommand::where('device_control_id', $validated['device_control_id'])
+        ->where('command_type', $validated['command_type'])
+        ->first();
+
+    if ($existingCommand) {
+        $existingCommand->update([
+            'data' => $rawData, // Laravel akan otomatis json_encode
         ]);
-        // Mencari apakah sudah ada perintah dengan device_control_id dan command_type yang sama
-        $existingCommand = ControlCommand::where('device_control_id', $validated['device_control_id'])
-            ->where('command_type', $validated['command_type'])
-            ->first();
 
-        if ($existingCommand) {
-            // Jika sudah ada, lakukan update pada data yang sudah ada
-            $existingCommand->update([
-                'data' => $validated['data'],
-            ]);
+        return redirect()->route('control-commands.index', ['device_control' => $validated['device_control_id']])
+            ->with('success', 'DataRow untuk perintah ' . $validated['command_type'] . ' berhasil diperbarui!');
+    } else {
+        ControlCommand::create([
+            'device_control_id' => $validated['device_control_id'],
+            'command_type' => $validated['command_type'],
+            'data' => $rawData, // Laravel akan otomatis json_encode
+        ]);
 
-            return redirect()->route('control-commands.index', ['device_control' => $validated['device_control_id']])
-                ->with('success', 'DataRow untuk perintah ' . $validated['command_type'] . ' berhasil ditambahkan!');
-        } else {
-            // Jika belum ada, buat data baru
-            ControlCommand::create([
-                'device_control_id' => $validated['device_control_id'],
-                'command_type' => $validated['command_type'],
-                'data' => $validated['data'],
-            ]);
-
-            return redirect()->route('control-commands.index', ['device_control' => $validated['device_control_id']])
-                ->with('success', 'DataRow untuk perintah ' . $validated['command_type'] . ' berhasil ditambahkan!');
-        }
+        return redirect()->route('control-commands.index', ['device_control' => $validated['device_control_id']])
+            ->with('success', 'DataRow untuk perintah ' . $validated['command_type'] . ' berhasil ditambahkan!');
     }
+}
+
 
     public function edit(ControlCommand $command)
     {
         // Mendapatkan deviceControl terkait dengan perintah (command)
         $deviceControl = $command->deviceControl;
-
+// dd($command);
         // Menampilkan form edit perintah dengan data perintah yang sudah ada
         return view('control-commands.form', compact('command', 'deviceControl'));
     }
@@ -76,11 +78,13 @@ class ControlCommandController extends Controller
             'command_type' => 'required|in:ON,OFF',
             'data' => 'required|string',
         ]);
+ // Ubah input string ke array integer
+ $rawData = array_map('intval', explode(',', $validated['data']));
 
         // Update data perintah yang ada
         $command->update([
             'command_type' => $validated['command_type'],
-            'data' => $validated['data'],
+            'data' => $rawData,
         ]);
 
         // Redirect dengan pesan sukses

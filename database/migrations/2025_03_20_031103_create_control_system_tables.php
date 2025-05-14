@@ -40,7 +40,7 @@ return new class extends Migration {
             $table->string('nama')->nullable(); // Misalnya "Relay AC 1"
             $table->string('kategori')->nullable(); // Misalnya "AC", "Lampu","sensor_arus"
             $table->integer('nomor_urut')->nullable(); // Nomor urut perangkat dalam kelas
-            $table->string('topic_mqtt')->unique()->nullable(); // Topik MQTT unik
+            $table->string('topic_mqtt')->nullable(); // Topik MQTT unik
             $table->boolean('status')->default(false); // Status aktif/tidak aktif
             // Tambahkan kolom untuk data tambahan dalam format JSON
             $table->json('data_tambahan')->nullable(); // Contoh: {"kode_ir": {"on": "0x20DF10EF", "off": "0x20DF40BF"}, "suhu": 25.5}

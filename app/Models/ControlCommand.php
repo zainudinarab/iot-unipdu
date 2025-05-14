@@ -8,6 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 class ControlCommand extends Model
 {
     protected $fillable = ['device_control_id', 'command_type', 'data'];
+    // Laravel >= 9 (casts)
+    protected $casts = [
+        'data' => 'array',
+    ];
+
 
     public function control()
     {
